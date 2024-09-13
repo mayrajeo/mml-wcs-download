@@ -2,14 +2,12 @@ import json
 import owslib.wcs as wcs
 import geopandas as gpd
 from pathlib import Path
-import rasterio as rio
 import numpy as np
 import base64
 import io
 import os
 import shapely
 import rasterio.merge as riomerge
-import psutil
 from itertools import product
 from PIL import Image
 
