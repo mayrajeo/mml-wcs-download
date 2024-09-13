@@ -12,7 +12,7 @@ Required packages are `rasterio`, `geopandas` (optionally with `pyogrio`), `owsl
 
 ### API-key
 
-In order to access the WCS API, you need to create your own API-key [according to these instructions](https://www.maanmittauslaitos.fi/rajapinnat/api-avaimen-ohje). Afterwards, create the follogin file in `secret/` named `creds.json`:
+In order to access the WCS API, you need to create your own API-key [according to these instructions](https://www.maanmittauslaitos.fi/rajapinnat/api-avaimen-ohje). Afterwards, create the following file in `secret/` named `creds.json`:
 
 ```json
 {"mml_api_key": "<your_api_key_here>"}
