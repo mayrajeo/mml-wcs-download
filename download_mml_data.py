@@ -174,7 +174,7 @@ def download_mml_data(
 
     if not os.path.exists(outpath): os.makedirs(outpath)
 
-    gdf = gpd.read_file(locations)
+    gdf = gpd.read_file(locations).to_crs('EPSG:3067')
 
     # Infer geometry type
 
