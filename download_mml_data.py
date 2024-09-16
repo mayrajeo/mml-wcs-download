@@ -137,11 +137,10 @@ def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
     for y in years:
         if os.path.exists(outpath/f'{patch_id}/{y}.tif'): continue
         for i, (dx, dy) in enumerate(product(range(0, w, 2000), range(0, h, 2000))):
-            #print(f'Before download: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB')
             get_wcs_img(bounds=[float(min_x+dx), 
                                 float(min_y+dy), 
-                                float(min_x+dx+2000), 
-                                float(min_y+dy+2000)],
+                                float(min_x+dx+min(w, 2000)), 
+                                float(min_y+dy+min(h, 2000))],
                         outfile=outpath/f'{patch_id}/temp_{y}_{i}.tif',
                         year=y,
                         false_color=false_color)
@@ -203,6 +202,11 @@ def download_mml_data(
     # Check for mixed types
     if len(geom_type) > 1:
         print('Multiple geometry types detected')
+        return
+
+    # Check imsize for point data
+    if imsize > 2000: 
+        print(f'Largest supported image size is 2000, but {imsize} was provided.')
         return
 
     match geom_type[0]:
