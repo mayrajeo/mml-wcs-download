@@ -139,8 +139,8 @@ def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
         for i, (dx, dy) in enumerate(product(range(0, w, 2000), range(0, h, 2000))):
             get_wcs_img(bounds=[float(min_x+dx), 
                                 float(min_y+dy), 
-                                float(min_x+dx+min(w, 2000)), 
-                                float(min_y+dy+min(h, 2000))],
+                                float(min(max_x, min_x+dx+2000)), 
+                                float(min(max_y, min_y+dy+2000))],
                         outfile=outpath/f'{patch_id}/temp_{y}_{i}.tif',
                         year=y,
                         false_color=false_color)
