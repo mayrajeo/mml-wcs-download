@@ -205,7 +205,7 @@ def download_mml_data(
         return
 
     # Check imsize for point data
-    if imsize > 2000: 
+    if imsize > 4000: 
         print(f'Largest supported image size is 2000, but {imsize} was provided.')
         return
 
