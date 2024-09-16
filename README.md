@@ -6,7 +6,7 @@ Collection of scripts for accessing historical aerial images from [Ortokuvien ja
 
 ### Installation
 
-Required packages are `rasterio`, `geopandas` (optionally with `pyogrio`), `owslib`, `tqdm` and `fastcore`. Environment with them can be installed with 
+Required packages are `rasterio`, `geopandas` (optionally with `pyogrio`), `owslib`, and `fastcore`. Environment with them can be installed with 
 
 > conda env create -f env.yml
 
@@ -65,6 +65,6 @@ The data are saved with the following folder structure
 
 As data from each year covers whole Finland so that if there are no aerial images from an area, the data is simply just zero. The default way to download the data is to brute-force all years between 1931 and 2024 and check whether the minimum and maximum values are identical. This is slow especially for large areas or multiple points.
 
-In order to speed up the search, it is possible to use [Ilmakuvausten ja laserkeilausten indeksikartta](https://hkp.maanmittauslaitos.fi/hkp/published/fi/4343c1b4-7d8f-4473-896a-70f930f36be1), which shows all aerial campaigns in Finland since 1931. These layers are available as merged data in `data/index_layers.geojson`, and they contain the merged `ilmakuvat` and `ortot` for each year. 
+In order to speed up the search, it is possible to use [Ilmakuvausten ja laserkeilausten indeksikartta](https://hkp.maanmittauslaitos.fi/hkp/published/fi/4343c1b4-7d8f-4473-896a-70f930f36be1), which shows all aerial campaigns in Finland since 1931. These layers are available as merged data in `data/index_layers.geojson`, and they contain the merged `ilmakuvat` and `ortot` for each year. The file `data/index_layers.json` is the mapping between layer identifiers and explanation on the index map.
 
 The scripts used to produce these data are `get_time_layers.py` and `flatten_time_layers.py`.
