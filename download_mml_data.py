@@ -157,7 +157,7 @@ def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
 def download_mml_data(
     locations:Path, # Path to GIS data containing locations either as points or polygons
     outpath:Path, # Directory to save the results
-    year_layer_path:Path=None, # Data of historical aerial campaigns used to filter possible years to process
+    year_layer_path:Path, # Data of historical aerial campaigns used to filter possible years to process
     id_column:str=None, # Which column is used to identify the locations. If None, index is used.
     false_color:bool=False, # Whether to download NIR-R-G images. Available only for 2009 and later
     imsize:int=256 # If locations are point data, the size of the images to download
@@ -176,6 +176,7 @@ def download_mml_data(
     gdf = gpd.read_file(locations).to_crs('EPSG:3067')
 
     # Infer geometry type
+
 
     geom_type = gdf.geom_type.unique()
 

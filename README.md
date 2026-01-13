@@ -30,7 +30,7 @@ usage: download_mml_data.py [-h] [--year_layer_path YEAR_LAYER_PATH] [--id_colum
                             [--imsize IMSIZE]
                             locations outpath
 
-Download all available aerial images from `locations` and save them to `outpath`. If `locations` are Point data, all points are buffered so that `imsize` times `imsize` images centered around the points are produced. If `locations` are Polygon data, resulting images cover the orthogonal bounding boxes of the locations. If `year_layer_path` is provided, possible years are filtered so that only years where there is a possibility of aerial campaing are processed. Otherwise, all years from 1931 to 2024 are processed.
+Download all available aerial images from `locations` and save them to `outpath`. If `locations` are Point data, all points are buffered so that `imsize` times `imsize` images centered around the points are produced. If `locations` are Polygon data, resulting images cover the orthogonal bounding boxes of the locations. If `year_layer_path` is provided, possible years are filtered so that only years where there is a possibility of aerial campaing are processed. Otherwise, all years from 1931 to 2025 are processed.
 
 positional arguments:
   locations                          Path to GIS data containing locations either as points or polygons
@@ -65,6 +65,4 @@ The data are saved with the following folder structure
 
 As data from each year covers whole Finland so that if there are no aerial images from an area, the data is simply just zero. The default way to download the data is to brute-force all years between 1931 and 2024 and check whether the minimum and maximum values are identical. This is slow especially for large areas or multiple points.
 
-In order to speed up the search, it is possible to use [Ilmakuvausten ja laserkeilausten indeksikartta](https://hkp.maanmittauslaitos.fi/hkp/published/fi/4343c1b4-7d8f-4473-896a-70f930f36be1), which shows all aerial campaigns in Finland since 1931. These layers are available as merged data in `data/index_layers.geojson`, and they contain the merged `ilmakuvat` and `ortot` for each year. The file `data/index_layers.json` is the mapping between layer identifiers and explanation on the index map.
-
-The scripts used to produce these data are `get_time_layers.py` and `flatten_time_layers.py`.
+In order to speed up the search, it is possible to use [Ilmakuvausten ja laserkeilausten indeksikartta](https://hkp.maanmittauslaitos.fi/hkp/published/fi/4343c1b4-7d8f-4473-896a-70f930f36be1), which shows all aerial campaigns in Finland since 1931. These layers are available on [NLS Finland site](https://www.maanmittauslaitos.fi/laserkeilaus-ja-ilmakuvaus). To get the most up-to-date layers and use them for filtering, download `ilmakuvatasot` and `ortokuvatasot`, unpack them, run `python flatten_layers.py <ilmakuvatasot> <ortokuvatasot> data/index_layers.gpkg`. 

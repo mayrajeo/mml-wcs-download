@@ -2,7 +2,11 @@ import geopandas as gpd
 from shapely.geometry import MultiPolygon, Polygon, GeometryCollection
 from shapely.ops import unary_union
 from shapely import make_valid
-import fiona
+import os
+from pathlib import Path
+from tqdm import tqdm
+
+from fastcore.script import *
 
 def union_geometries(row):
     geometries = [geom for geom in [row['geometry_ik'], row['geometry_or']] if geom is not None]
@@ -10,54 +14,64 @@ def union_geometries(row):
         return unary_union(geometries)
     return None
 
-ik_layers = fiona.listlayers('data/ilmakuvat.gpkg')
-or_layers = fiona.listlayers('data/ortot.gpkg')
+@call_parse
+def flatten_layers(
+    aerial_image_layer_dir:Path, # Folder containing the aerial image layer files
+    orthoimage_layer_dir:Path, # Folder containing the orthoimage layer files
+    outpath:Path # Where to save the resulting file
+):
 
-ik_polys = []
-or_polys = []
-ik_years = []
-or_years = []
+    ik_layers = [aerial_image_layer_dir/f for f in os.listdir(aerial_image_layer_dir)]
+    or_layers = [orthoimage_layer_dir/f for f in os.listdir(orthoimage_layer_dir)]
 
-for l in ik_layers:
-    ik_years.append(int(l))
-    gdf = gpd.read_file('data/ilmakuvat.gpkg', layer=l)
-    # Step 1: Fix invalid geometries using make_valid
-    gdf['geometry'] = gdf['geometry'].apply(make_valid)
+    ik_polys = []
+    or_polys = []
+    ik_years = []
+    or_years = []
 
-    # Step 2: Dissolve geometries
-    dissolved = unary_union(gdf['geometry'])
+    print('Processing aerial image layers')
+    for l in tqdm(ik_layers):
+        ik_years.append(int(l.stem.split('_')[0]))
+        gdf = gpd.read_file(l)
+        # Step 1: Fix invalid geometries using make_valid
+        gdf['geometry'] = gdf['geometry'].apply(make_valid)
 
-    # Step 3: Extract polygons from GeometryCollection
-    if isinstance(dissolved, GeometryCollection):
-        polygons = [geom for geom in dissolved.geoms if isinstance(geom, Polygon) or isinstance(geom, MultiPolygon)]
-        dissolved = MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
-    elif not isinstance(dissolved, MultiPolygon):
-        dissolved = MultiPolygon([dissolved])
+        # Step 2: Dissolve geometries
+        dissolved = unary_union(gdf['geometry'])
 
-    ik_polys.append(dissolved)
+        # Step 3: Extract polygons from GeometryCollection
+        if isinstance(dissolved, GeometryCollection):
+            polygons = [geom for geom in dissolved.geoms if isinstance(geom, Polygon) or isinstance(geom, MultiPolygon)]
+            dissolved = MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
+        elif not isinstance(dissolved, MultiPolygon):
+            dissolved = MultiPolygon([dissolved])
 
-for l in or_layers:
-    or_years.append(int(l))
-    gdf = gpd.read_file('data/ortot.gpkg', layer=l)
-    # Step 1: Fix invalid geometries using make_valid
-    gdf['geometry'] = gdf['geometry'].apply(make_valid)
+        ik_polys.append(dissolved)
 
-    # Step 2: Dissolve geometries
-    dissolved = unary_union(gdf['geometry'])
+    print('Processing orthophoto layers')
+    for l in tqdm(or_layers):
+        or_years.append(int(l.stem.split('_')[0]))
+        gdf = gpd.read_file(l)
+        # Step 1: Fix invalid geometries using make_valid
+        gdf['geometry'] = gdf['geometry'].apply(make_valid)
 
-    # Step 3: Extract polygons from GeometryCollection
-    if isinstance(dissolved, GeometryCollection):
-        polygons = [geom for geom in dissolved.geoms if isinstance(geom, Polygon) or isinstance(geom, MultiPolygon)]
-        dissolved = MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
-    elif not isinstance(dissolved, MultiPolygon):
-        dissolved = MultiPolygon([dissolved])
-    or_polys.append(dissolved)
+        # Step 2: Dissolve geometries
+        dissolved = unary_union(gdf['geometry'])
 
-flat_ik = gpd.GeoDataFrame({'year': ik_years, 'geometry': ik_polys}, crs=gdf.crs)
-flat_or = gpd.GeoDataFrame({'year': or_years, 'geometry': or_polys}, crs=gdf.crs)
+        # Step 3: Extract polygons from GeometryCollection
+        if isinstance(dissolved, GeometryCollection):
+            polygons = [geom for geom in dissolved.geoms if isinstance(geom, Polygon) or isinstance(geom, MultiPolygon)]
+            dissolved = MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
+        elif not isinstance(dissolved, MultiPolygon):
+            dissolved = MultiPolygon([dissolved])
+        or_polys.append(dissolved)
 
-flat = flat_ik.merge(flat_or, on='year', how='outer', suffixes=('_ik', '_or'))
-flat['geometry'] = flat.apply(union_geometries, axis=1)
-flat = flat[['year', 'geometry']]
-flat = gpd.GeoDataFrame(flat, geometry='geometry', crs=gdf.crs)
-flat.to_file('data/index_layers.geojson')
+    flat_ik = gpd.GeoDataFrame({'year': ik_years, 'geometry': ik_polys}, crs=gdf.crs)
+    flat_or = gpd.GeoDataFrame({'year': or_years, 'geometry': or_polys}, crs=gdf.crs)
+
+    flat = flat_ik.merge(flat_or, on='year', how='outer', suffixes=('_ik', '_or'))
+    flat['geometry'] = flat.apply(union_geometries, axis=1)
+    flat = flat[['year', 'geometry']]
+    flat = gpd.GeoDataFrame(flat, geometry='geometry', crs=gdf.crs)
+    flat.to_file(outpath)
+
