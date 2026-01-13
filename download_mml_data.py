@@ -101,7 +101,7 @@ def process_point_data(patch_id, geom, year_layer_path, imsize, outpath, false_c
         year_layers = gpd.read_file(year_layer_path)
         years = check_years(year_layers, geom)
     else:
-        years = range(1931, 2024)
+        years = range(1931, 2025)
     bounds = geom.buffer(imsize//4, cap_style='square', join_style='mitre').bounds
     min_x = np.floor(bounds[0])
     min_y = np.floor(bounds[1])
@@ -127,7 +127,7 @@ def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
         year_layers = gpd.read_file(year_layer_path)
         years = check_years(year_layers, geom)
     else:
-        years = range(1931, 2024)
+        years = range(1931, 2025)
     min_x, min_y, max_x, max_y = geom.bounds
     # Get width and height
     w = int(np.ceil(max_x-min_x))
@@ -168,7 +168,7 @@ def download_mml_data(
     the points are produced. 
     If `locations` are Polygon data, resulting images cover the orthogonal bounding boxes of the locations.
     If `year_layer_path` is provided, possible years are filtered so that only years where there is a possibility
-    of aerial campaing are processed. Otherwise, all years from 1931 to 2024 are processed.
+    of aerial campaing are processed. Otherwise, all years from 1931 to 2025 are processed.
     """
 
     if not os.path.exists(outpath): os.makedirs(outpath)
