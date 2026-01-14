@@ -211,8 +211,10 @@ def download_mml_data(
         case 'Point':
             inps = ((patch_id, geom, year_layer_path, imsize, outpath, false_color) for patch_id, geom 
                     in zip(gdf[id_column] if id_column in gdf.columns else gdf.index, gdf.geometry))
-            ParallelPbar(n_jobs=-1, backend='loky')(delayed(process_point_data)(*inp) for inp in inps)
+            ParallelPbar('Downloading images')(n_jobs=-1, backend='loky')(
+                delayed(process_point_data)(*inp) for inp in inps)
         case 'Polygon':
             inps = ((patch_id, geom, year_layer_path, outpath, false_color) for patch_id, geom 
                     in zip(gdf[id_column] if id_column in gdf.columns else gdf.index, gdf.geometry))
-            ParallelPbar(n_jobs=-1, backend='loky')(delayed(process_polygon_data)(*inp) for inp in inps)
+            ParallelPbar('Downloading images')(n_jobs=-1, backend='loky')(
+                delayed(process_polygon_data)(*inp) for inp in inps)
