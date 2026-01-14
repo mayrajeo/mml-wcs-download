@@ -11,7 +11,8 @@ import rasterio.merge as riomerge
 from itertools import product
 from PIL import Image
 
-from joblib import Parallel, delayed
+from joblib import delayed
+from tqdm_joblib import ParallelPbar
 
 from fastcore.script import *
 
@@ -87,7 +88,6 @@ def get_wcs_img(bounds:list[float,float,float,float], outfile:Path, year:int=202
                 break
 
     with open(outfile, 'wb') as out:
-        print(f'Saving file {outfile}')
         out.write(img_rgb.read())
     return None
 
@@ -114,7 +114,6 @@ def process_point_data(patch_id, geom, year_layer_path, imsize, outpath, false_c
                     outfile=outpath/f'{patch_id}/{y}.tif',
                     year=y,
                     false_color=false_color)
-    print(f'Finished with {patch_id}')
     return
 
 def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
@@ -148,7 +147,6 @@ def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
         riomerge.merge(files_to_merge, dst_path=outpath/f'{patch_id}/{y}.tif',
                        dst_kwds={'compress':'lzw', 'predictor':2, 'BIGTIFF':'YES'})
         for f in files_to_merge: os.remove(f)
-    print(f'Finished with {patch_id}')
     return
 
 
@@ -172,7 +170,7 @@ def download_mml_data(
 
     if not os.path.exists(outpath): os.makedirs(outpath)
 
-    gdf = gpd.read_file(locations).to_crs('EPSG:3067')[:10]
+    gdf = gpd.read_file(locations).to_crs('EPSG:3067')
 
     # Infer geometry type
 
@@ -213,8 +211,8 @@ def download_mml_data(
         case 'Point':
             inps = ((patch_id, geom, year_layer_path, imsize, outpath, false_color) for patch_id, geom 
                     in zip(gdf[id_column] if id_column in gdf.columns else gdf.index, gdf.geometry))
-            Parallel(n_jobs=-1, backend='loky')(delayed(process_point_data)(*inp) for inp in inps)
+            ParallelPbar(n_jobs=-1, backend='loky')(delayed(process_point_data)(*inp) for inp in inps)
         case 'Polygon':
             inps = ((patch_id, geom, year_layer_path, outpath, false_color) for patch_id, geom 
                     in zip(gdf[id_column] if id_column in gdf.columns else gdf.index, gdf.geometry))
-            Parallel(n_jobs=-1, backend='loky')(delayed(process_polygon_data)(*inp) for inp in inps)
+            ParallelPbar(n_jobs=-1, backend='loky')(delayed(process_polygon_data)(*inp) for inp in inps)
