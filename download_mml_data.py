@@ -11,7 +11,6 @@ import rasterio.merge as riomerge
 from itertools import product
 from PIL import Image
 
-#from multiprocessing.pool import Pool
 from joblib import Parallel, delayed
 
 from fastcore.script import *
@@ -59,10 +58,10 @@ def get_wcs_img(bounds:list[float,float,float,float], outfile:Path, year:int=202
         # Try to request an image
             if mml_wcs is None:
                 mml_wcs = wcs.WebCoverageService(
-                    mml_wcs_url, headers={
+                    mml_wcs_url, version='2.0.1', headers={
                     'Authorization': f'Basic {str(base64.b64encode(api_key.encode()))[2:-1]}Og=='
                     })
-            img_rgb = mml_wcs.getCoverage(identifier=[layer],
+            img_rgb = mml_wcs.getCoverage(identifier=layer,
                                           crs='EPSG:3067',
                                           subsets=[('E', bounds[0], bounds[2]), 
                                                     ('N', bounds[1], bounds[3]), 
@@ -173,7 +172,7 @@ def download_mml_data(
 
     if not os.path.exists(outpath): os.makedirs(outpath)
 
-    gdf = gpd.read_file(locations).to_crs('EPSG:3067')
+    gdf = gpd.read_file(locations).to_crs('EPSG:3067')[:10]
 
     # Infer geometry type
 
