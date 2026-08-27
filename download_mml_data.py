@@ -65,8 +65,8 @@ def get_wcs_img(bounds:list[float,float,float,float], outfile:Path, year:int=202
             img_rgb = mml_wcs.getCoverage(identifier=layer,
                                           crs='EPSG:3067',
                                           subsets=[('E', bounds[0], bounds[2]), 
-                                                    ('N', bounds[1], bounds[3]), 
-                                                    ('time', f'{year}-12-31T00:00:00.000Z')],
+                                                   ('N', bounds[1], bounds[3]), 
+                                                   ('time', f'{year}-12-31T00:00:00.000Z')],
                                           format='image/tiff')
         except Exception as e:
             # Connectionerror or something like that, try again
@@ -127,6 +127,10 @@ def process_polygon_data(patch_id, geom, year_layer_path, outpath, false_color):
     else:
         years = range(1931, 2025)
     min_x, min_y, max_x, max_y = geom.bounds
+    min_x = np.floor(min_x)
+    min_y = np.floor(min_y)
+    max_x = np.ceil(max_x)
+    max_y = np.ceil(max_y)
     # Get width and height
     w = int(np.ceil(max_x-min_x))
     h = int(np.ceil(max_y-min_y))
